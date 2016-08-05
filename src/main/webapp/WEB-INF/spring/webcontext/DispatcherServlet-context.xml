@@ -9,10 +9,25 @@ http://www.springframework.org/schema/context
 http://www.springframework.org/schema/context/spring-context-4.0.xsd
 http://www.springframework.org/schema/mvc
 http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+    <!--Say spring to handle annotations Spring MVC-->
+    <!--needed to enable annotations such as @controller and @RequestMapping.-->
     <mvc:annotation-driven/>
+
+    <!--Dispatcher servlet searches such annotated classes for mapped
+methods (the @RequestMapping annotated methods) to serve a web request.
+
+In order to make the controller available for searching, we need to create a bean for this controller in
+our web application context.-->
     <context:component-scan base-package="App"/>
+
+<!--We can create beans for controllers explicitly via the bean configuration-->
+    <!--but spring allow use @Controller annotation because it's often user case-->
+
+    <!--Bean for project template engine-->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <!--It allow you don't write prefix and suffix each time-->
+        <property name="prefix" value="/WEB-INF/views/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
 
