@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
-    private List<Product> listOfProducts = new ArrayList<Product>();
+    private List<Product> listOfProducts = new ArrayList<>();
 
     public InMemoryProductRepository() {
 

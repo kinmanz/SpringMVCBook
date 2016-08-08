@@ -18,14 +18,12 @@
 </section>
 <section class="container">
     <div class="row">
-        <c:forEach items="${products}" var="customer">
+        <c:forEach items="${customers}" var="customer">
             <div class="col-sm-6 col-md-3" style="padding-bottom: 15px">
                 <div class="thumbnail">
                     <div class="caption">
                         <h3>${customer.name}</h3>
-                        <p>${customer.description}</p>
-                        <p>$${customer.unitPrice}</p>
-                        <p>Available ${customer.unitsInStock} units in stock</p>
+                        <p>${customer.address}</p>
                     </div>
                 </div>
             </div>
