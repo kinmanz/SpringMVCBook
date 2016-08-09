@@ -5,8 +5,7 @@ import App.domain.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
@@ -54,6 +53,47 @@ public class InMemoryProductRepository implements ProductRepository {
         }
 
         return productById;
+    }
+
+    public List<Product> getProductsByCategory(String category) {
+        List<Product> productsByCategory = new ArrayList<>();
+        for(Product product: listOfProducts) {
+            if(category.equalsIgnoreCase(product.getCategory())){
+                productsByCategory.add(product);
+            }
+        }
+        return productsByCategory;
+    }
+
+    @Override
+    public Set<Product> getProductsByFilter(Map<String, List<String>> filterParams) {
+        Set<Product> productsByBrand = new HashSet<Product>();
+        Set<Product> productsByCategory = new HashSet<Product>();
+        Set<String> criterias = filterParams.keySet();
+
+        boolean containsCategory = criterias.contains("category");
+        boolean containsBrand = criterias.contains("brand");
+
+        if(containsBrand) {
+            for(String brandName: filterParams.get("brand")) {
+                for(Product product: listOfProducts) {
+                    if(brandName.equalsIgnoreCase(product.getManufacturer())){
+                        productsByBrand.add(product);
+                    }
+                }
+            }
+        }
+        if(containsCategory) {
+            for(String category: filterParams.get("category")) {
+                productsByCategory.addAll(this.getProductsByCategory(category));
+            }
+        }
+        if (containsCategory && containsBrand) {
+            productsByCategory.retainAll(productsByBrand);
+            return productsByCategory;
+        }
+
+        return containsBrand ? productsByBrand : productsByCategory;
     }
 
     public List<Product> getAllProducts() {

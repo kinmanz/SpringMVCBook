@@ -6,7 +6,7 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
         <servlet-name>DispatcherServlet</servlet-name>
         <servlet-class> org.springframework.web.servlet.DispatcherServlet</servlet-class>
 
-        <!--will find configuration by default in WEB-INF/<servlet_NAME>-->
+        <!--will find configuration by default in WEB-INF/<servlet_NAME>-servlet.xml-->
 
         <init-param>
             <!--If you want to place file in other directory-->
@@ -18,7 +18,7 @@ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     </servlet>
     <servlet-mapping>
         <servlet-name>DispatcherServlet</servlet-name>
-        <url-pattern>/</url-pattern>
+        <url-pattern>/webstore/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

@@ -15,8 +15,10 @@
         <tomcat.version>7.0.57</tomcat.version>
     </properties>
 
+
+
     <build>
-        <finalName>SpringMVC</finalName>
+        <finalName>SpringMVCBook</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
