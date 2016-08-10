@@ -31,4 +31,15 @@ our web application context.-->
         <property name="suffix" value=".jsp"/>
     </bean>
 
+    <!--serving static resources-->
+    <!--the /** symbol indicates the recursive look for
+        any resource files underneath the base resource directory-->
+    <mvc:resources location="/resources/" mapping="/resource/**"/>
+
+    <!--to bind messages.properties file-->
+    <bean id= "messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <!--name of file in classPath-->
+        <property name="basename" value="messages"/>
+    </bean>
+
 </beans>

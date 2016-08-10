@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
@@ -94,6 +95,18 @@ public class InMemoryProductRepository implements ProductRepository {
         }
 
         return containsBrand ? productsByBrand : productsByCategory;
+    }
+
+    @Override
+    public List<Product> getProductsByManufacturer(String manufacturer) {
+        return listOfProducts.stream()
+                .filter((product) -> product.getManufacturer().equalsIgnoreCase(manufacturer))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addProduct(Product product) {
+        listOfProducts.add(product);
     }
 
     public List<Product> getAllProducts() {
