@@ -1,11 +1,14 @@
 package App.controllers;
 
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import App.domain.Product;
+import App.exceptions.NoProductsFoundUnderCategoryException;
+import App.exceptions.ProductNotFoundException;
 import App.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +17,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/products")
@@ -26,8 +33,13 @@ public class ProductController {
     @RequestMapping("/{category}")
     public String getProductsByCategory(Model model,
                                         @PathVariable("category") String productCategory) {
-        model.addAttribute("products",
-                productService.getProductsByCategory(productCategory));
+        List<Product> products = productService.getProductsByCategory(productCategory);
+
+        if (products == null || products.isEmpty()) {
+            throw new NoProductsFoundUnderCategoryException();
+        }
+
+        model.addAttribute("products", products);
         return "products";
     }
 
@@ -85,15 +97,28 @@ public class ProductController {
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public String processAddNewProductForm(@ModelAttribute("newProduct")
-                                                   Product newProduct,
-                                           BindingResult result) {
+    public String processAddNewProductForm(@ModelAttribute("productToBeAdded")
+                                                   Product productToBeAdded,
+                                           BindingResult result,
+                                           HttpServletRequest request) {
         String[] suppressedFields = result.getSuppressedFields();
         if (suppressedFields.length > 0) {
             throw new RuntimeException("Attempting to bind disallowed fields: "
                     + StringUtils.arrayToCommaDelimitedString(suppressedFields));
         }
-        productService.addProduct(newProduct);
+
+        MultipartFile productImage = productToBeAdded.getProductImage();
+        String rootDirectory = request.getSession().getServletContext().getRealPath("/");
+        if (productImage != null && !productImage.isEmpty()) {
+            try {
+                productImage.transferTo(new File(rootDirectory + "resources\\images\\" +
+                        productToBeAdded.getProductId() + ".jpg"));
+            } catch (Exception e) {
+                throw new RuntimeException("Product Image saving failed", e);
+            }
+        }
+
+        productService.addProduct(productToBeAdded);
         return "redirect:/products";
     }
 
@@ -102,4 +127,16 @@ public class ProductController {
         model.addAttribute("products", productService.getAllProducts());
         return "products";
     }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ModelAndView handleError(HttpServletRequest req,
+                                    ProductNotFoundException exception) {
+        ModelAndView mav = new ModelAndView();
+        mav.addObject("invalidProductId", exception.getProductId());
+        mav.addObject("exception", exception);
+        mav.addObject("url", req.getRequestURL() + "?" + req.getQueryString());
+        mav.setViewName("productNotFound");
+        return mav;
+    }
+
 }
