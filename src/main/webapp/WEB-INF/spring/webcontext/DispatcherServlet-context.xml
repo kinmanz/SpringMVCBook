@@ -12,7 +12,7 @@ http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 
     <!--Say spring to handle annotations Spring MVC-->
     <!--needed to enable annotations such as @controller and @RequestMapping.-->
-    <mvc:annotation-driven enable-matrix-variables="true"/>
+    <mvc:annotation-driven enable-matrix-variables="true" validator="validator"/>
 
     <!--Dispatcher servlet searches such annotated classes for mapped
 methods (the @RequestMapping annotated methods) to serve a web request.
@@ -21,7 +21,7 @@ In order to make the controller available for searching, we need to create a bea
 our web application context.-->
     <context:component-scan base-package="App"/>
 
-<!--We can create beans for controllers explicitly via the bean configuration-->
+    <!--We can create beans for controllers explicitly via the bean configuration-->
     <!--but spring allow use @Controller annotation because it's often user case-->
 
     <!--Bean for project template engine-->
@@ -41,7 +41,7 @@ our web application context.-->
     <mvc:resources location="/resources/" mapping="/resource/**"/>
 
     <!--to bind messages.properties file-->
-    <bean id= "messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
         <!--name of file in classPath-->
         <property name="basename" value="messages"/>
     </bean>
@@ -72,5 +72,42 @@ our web application context.-->
             </bean>
         </constructor-arg>
     </bean>
+
+    <mvc:interceptors>
+        <bean class="App.interceptors.PerformanceMonitorInterceptor"/>
+
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+            <!--for use <a href="?language=en" >English</a>|<a href="?language=nl" >Dutch</a>-->
+            <property name="paramName" value="language"/>
+        </bean>
+
+        <bean class= "App.interceptors.AuditingInterceptor"/>
+
+        <bean class="App.interceptors.PromoCodeInterceptor">
+            <property name="promoCode" value="OFF3R"/>
+            <property name="errorRedirect" value="invalidPromoCode"/>
+            <property name="offerRedirect" value="products"/>
+        </bean>
+    </mvc:interceptors>
+
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+        <property name="defaultLocale" value="en"/>
+    </bean>
+
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+
+
+    <!--combine two ways-->
+    <bean id="productValidator" class="App.validators.ProductValidator">
+        <property name = "springValidators">
+            <set>
+                <ref bean = "unitsInStockValidator"/>
+            </set>
+        </property>
+    </bean>
+
+
 
 </beans>

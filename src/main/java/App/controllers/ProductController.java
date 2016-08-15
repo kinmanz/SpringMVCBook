@@ -10,6 +10,8 @@ import App.domain.Product;
 import App.exceptions.NoProductsFoundUnderCategoryException;
 import App.exceptions.ProductNotFoundException;
 import App.service.ProductService;
+import App.validators.ProductValidator;
+import App.validators.UnitsInStockValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/products")
@@ -28,6 +31,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductValidator productValidator;
 
     //    @RequestMapping(value = "/type/{type}", method = RequestMethod.GET)
     @RequestMapping("/{category}")
@@ -86,6 +92,7 @@ public class ProductController {
     @InitBinder
     public void initialiseBinder(WebDataBinder binder) {
         binder.setDisallowedFields("unitsInOrder", "discontinued");
+        binder.setValidator(productValidator);
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.GET)
@@ -96,11 +103,22 @@ public class ProductController {
         return "addProduct";
     }
 
+
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public String processAddNewProductForm(@ModelAttribute("productToBeAdded")
+    public String processAddNewProductForm(@ModelAttribute("productToBeAdded") @Valid
                                                    Product productToBeAdded,
                                            BindingResult result,
-                                           HttpServletRequest request) {
+                                           HttpServletRequest request,
+                                           Model model) {
+
+        /*After validating the incoming form
+        bean (productToBeAdded), Spring will store the results in the result object*/
+        if(result.hasErrors()) {
+            model.addAttribute("newProduct", new Product());
+
+            return "addProduct";
+        }
+
         String[] suppressedFields = result.getSuppressedFields();
         if (suppressedFields.length > 0) {
             throw new RuntimeException("Attempting to bind disallowed fields: "
@@ -137,6 +155,11 @@ public class ProductController {
         mav.addObject("url", req.getRequestURL() + "?" + req.getQueryString());
         mav.setViewName("productNotFound");
         return mav;
+    }
+
+    @RequestMapping("/invalidPromoCode")
+    public String invalidPromoCode() {
+        return "invalidPromoCode";
     }
 
 }
